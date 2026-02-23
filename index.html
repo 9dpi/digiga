@@ -627,9 +627,25 @@
 
         // Mock data cho chế độ Local (Pokemon style)
         const MOCK_CARDS = [
-            { id: "sv1-001", tên: "Pikachu", hệ: "Electric", hp: "70", "giai đoạn": "Basic", "ảnh url": "https://picsum.photos/400/250?random=1", "độ hiếm": "C", "bộ sưu tập": "Scarlet & Violet" },
-            { id: "sv1-022", tên: "Charizard", hệ: "Fire", hp: "170", "giai đoạn": "Stage 2", "ảnh url": "https://picsum.photos/400/250?random=22", "độ hiếm": "R", "bộ sưu tập": "Scarlet & Violet" },
-            { id: "sv1-029", tên: "Charizard ex", hệ: "Fire", hp: "330", "giai đoạn": "ex", "ảnh url": "https://picsum.photos/400/250?random=29", "độ hiếm": "SR", "bộ sưu tập": "Scarlet & Violet" }
+            {
+                id: "sv1-001", tên: "Pikachu", hệ: "Electric", hp: "70", "giai đoạn": "Basic",
+                "ảnh url": "https://picsum.photos/400/250?random=1", "độ hiếm": "C",
+                "chiêu thức 1 - tên": "Tia sét", "chiêu thức 1 - sát thương": "20",
+                "họa sĩ": "Shibuzoh.", "năm": "2023", "bộ sưu tập": "Scarlet & Violet"
+            },
+            {
+                id: "sv1-022", tên: "Charizard", hệ: "Fire", hp: "170", "giai đoạn": "Stage 2",
+                "ảnh url": "https://picsum.photos/400/250?random=22", "độ hiếm": "R",
+                "chiêu thức 1 - tên": "Bão lửa", "chiêu thức 1 - sát thương": "60",
+                "chiêu thức 2 - tên": "Lửa thiêng", "chiêu thức 2 - sát thương": "200",
+                "họa sĩ": "Shibuzoh.", "năm": "2023", "bộ sưu tập": "Scarlet & Violet"
+            },
+            {
+                id: "sv1-029", tên: "Charizard ex", hệ: "Fire", hp: "330", "giai đoạn": "ex",
+                "ảnh url": "https://picsum.photos/400/250?random=29", "độ hiếm": "SR",
+                "chiêu thức 1 - tên": "Địa ngục lửa", "chiêu thức 1 - sát thương": "90",
+                "họa sĩ": "5ban Graphics", "năm": "2024", "bộ sưu tập": "Scarlet & Violet"
+            }
         ];
 
         let coins = 160000;
@@ -637,12 +653,14 @@
         let ownedCards = 0;
 
         function updateDisplay(result) {
-            // Map lại các trường từ Sheet (Sheet có thể dùng tiếng Việt có dấu hoặc không)
+            // Map lại các trường từ Sheet (Hỗ trợ cả Tiếng Việt và Tiếng Anh)
             const name = result['tên'] || result['name'] || result.id || "Thẻ Vô Danh";
             const rarity = (result['độ hiếm'] || result['độ_hiếm'] || result['rarity'] || "C").toUpperCase();
             const img = result['ảnh url'] || result['ảnh_url'] || result['imageurl'] || result.img || 'https://via.placeholder.com/400x250?text=Digiga+Card';
-            const hp = result['hp'] || "";
-            const stage = result['giai đoạn'] || result['giai_đoạn'] || result['stage'] || "";
+            const hp = result['hp'] || "0";
+            const stage = result['giai đoạn'] || result['giai_đoạn'] || result['stage'] || "Basic";
+            const type = result['hệ'] || result['type'] || "Normal";
+            const retreat = result['chi phí rút lui'] || result['retreat'] || "1";
 
             document.getElementById('res-name').innerText = name;
             document.getElementById('res-rarity').innerText = rarity;
@@ -650,28 +668,45 @@
             document.getElementById('res-rarity').style.background = `var(--${rarityKey})`;
             document.getElementById('res-img').src = img;
 
-            // Mô tả ghép từ chiêu thức nếu có
-            const move1 = result['chiêu thức 1 - tên'] || "";
-            const move2 = result['chiêu thức 2 - tên'] || "";
-            document.getElementById('res-desc').innerText = move1 || move2 ? `Skill: ${move1}${move2 ? ' | ' + move2 : ''}` : 'Thẻ bài Pokemon huyền thoại.';
+            // Xử lý tuyệt chiêu (Moves) - Hiển thị Tên và Sát thương
+            const move1Name = result['chiêu thức 1 - tên'] || "";
+            const move1Dmg = result['chiêu thức 1 - sát thương'] || "";
+            const move2Name = result['chiêu thức 2 - tên'] || "";
+            const move2Dmg = result['chiêu thức 2 - sát thương'] || "";
+
+            let skillHTML = "";
+            if (move1Name) skillHTML += `<div style="font-weight: 700; color: #fff;">⚔️ ${move1Name} <span style="color: var(--secondary)">${move1Dmg ? move1Dmg : ''}</span></div>`;
+            if (move2Name) skillHTML += `<div style="font-weight: 700; color: #fff;">⚔️ ${move2Name} <span style="color: var(--secondary)">${move2Dmg ? move2Dmg : ''}</span></div>`;
+
+            const artist = result['họa sĩ'] || result['artist'] || "Unknown";
+            const year = result['năm'] || result['year'] || "2024";
+            const collection = result['bộ sưu tập'] || result['set'] || "";
+
+            document.getElementById('res-desc').innerHTML = `
+                <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px;">
+                    ${skillHTML || 'Thẻ bài Pokemon huyền thoại.'}
+                </div>
+                <div style="font-size: 0.6rem; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.5px;">
+                    ${collection ? collection + ' • ' : ''}Illus. ${artist} • ${year}
+                </div>
+            `;
 
             const statsContainer = document.getElementById('res-stats');
             statsContainer.innerHTML = '';
 
-            // Hiển thị HP và Giai đoạn nổi bật
+            // Lưới thông số chính
             const mainStats = [
                 { label: 'HP', val: hp },
+                { label: 'TYPE', val: type },
                 { label: 'STAGE', val: stage },
-                { label: 'TYPE', val: result['hệ'] || result['type'] }
+                { label: 'RETREAT', val: retreat }
             ];
 
             mainStats.forEach(stat => {
-                if (stat.val) {
-                    const item = document.createElement('div');
-                    item.className = 'info-item';
-                    item.innerHTML = `<span class="info-label">${stat.label}</span><span class="info-value">${stat.val}</span>`;
-                    statsContainer.appendChild(item);
-                }
+                const item = document.createElement('div');
+                item.className = 'info-item';
+                item.innerHTML = `<span class="info-label">${stat.label}</span><span class="info-value">${stat.val}</span>`;
+                statsContainer.appendChild(item);
             });
         }
 
