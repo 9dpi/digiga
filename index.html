@@ -261,44 +261,59 @@
         }
 
         .card-body {
-            padding: 12px 15px;
+            padding: 20px;
             flex-grow: 1;
             background: #12121e;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            gap: 5px;
+            gap: 15px;
+            /* Tăng gap để dàn đều */
             z-index: 3;
         }
 
         .card-info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            gap: 12px;
             width: 100%;
-            margin-top: 5px;
+            margin: 10px 0;
+            flex-grow: 1;
+            /* Phân bổ đều không gian */
         }
 
         .info-item {
             background: rgba(255, 255, 255, 0.05);
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 0.7rem;
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
             display: flex;
-            justify-content: space-between;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            gap: 4px;
+            transition: transform 0.2s;
+        }
+
+        .info-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
         .info-label {
-            font-weight: 400;
-            color: rgba(255, 255, 255, 0.6);
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.4);
             text-transform: uppercase;
             font-size: 0.6rem;
+            letter-spacing: 1px;
         }
 
         .info-value {
             font-weight: 700;
             color: var(--secondary);
+            /* Màu xanh neon cho thông số */
+            font-size: 1rem;
         }
 
         .rarity-badge {
