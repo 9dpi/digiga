@@ -416,19 +416,27 @@
             // Animation chuẩn bị
             cardElement.style.transform = 'scale(1.1) rotateZ(-5deg)';
 
-            // Gọi hàm xử lý gacha từ Apps Script
-            if (typeof google !== 'undefined') {
+            // Kiểm tra xem có đang chạy trong môi trường Google Apps Script hay không
+            const isGAS = typeof google !== 'undefined' && google.script && google.script.run;
+
+            if (isGAS) {
                 google.script.run
                     .withSuccessHandler(function (result) {
+                        if (!result) {
+                            alert("Server không trả về dữ liệu thẻ bài. Hãy kiểm tra lại file Sheet.");
+                            isSpinning = false;
+                            return;
+                        }
+
                         coins -= 100;
                         document.getElementById('coin-count').innerText = coins.toLocaleString();
-
                         overlay.style.display = 'flex';
 
                         // Cập nhật thông tin thẻ từ dữ liệu thật
-                        document.getElementById('res-name').innerText = result.name || result.id;
-                        document.getElementById('res-rarity').innerText = result.rarity;
-                        document.getElementById('res-rarity').style.background = `var(--${result.rarity.toLowerCase()})`;
+                        document.getElementById('res-name').innerText = result.name || result.id || "Thẻ Vô Danh";
+                        document.getElementById('res-rarity').innerText = result.rarity || "R";
+                        const rarityKey = (result.rarity || "R").toLowerCase();
+                        document.getElementById('res-rarity').style.background = `var(--${rarityKey})`;
                         document.getElementById('res-img').src = result.imageurl || result.img || 'https://via.placeholder.com/400x250?text=Digiga+Card';
                         document.getElementById('res-desc').innerText = result.description || result.desc || 'Thẻ bài hiếm trong bộ sưu tập Digiga';
 
@@ -445,18 +453,35 @@
                         }, 800);
                     })
                     .withFailureHandler(function (err) {
-                        alert("Lỗi kết nối: " + err);
+                        alert("Lỗi kết nối Server: " + err);
                         isSpinning = false;
                     })
-                    .pullGacha(); // Gọi hàm này bên backend_code.js
+                    .pullGacha();
             } else {
-                // Chế độ demo nếu mở file local không qua Apps Script
-                alert("Đang chạy ở chế độ Demo. Kết nối thành công tới Web App để dùng dữ liệu thật!");
+                // Chế độ demo khi chạy file local (không có môi trường GAS)
+                console.log("Môi trường Local: Chạy chế độ Demo.");
                 const result = MOCK_CARDS[Math.floor(Math.random() * MOCK_CARDS.length)];
-                // ... (giữ nguyên logic demo cũ như trong index.html)
+
+                coins -= 100;
+                document.getElementById('coin-count').innerText = coins.toLocaleString();
+                overlay.style.display = 'flex';
+
                 document.getElementById('res-name').innerText = result.name;
-                // [Logic demo tiếp tục...]
-                isSpinning = false;
+                document.getElementById('res-rarity').innerText = result.rarity;
+                document.getElementById('res-rarity').style.background = `var(--${result.rarity.toLowerCase()})`;
+                document.getElementById('res-img').src = result.img;
+                document.getElementById('res-desc').innerText = result.desc;
+
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    cardElement.classList.add('flipping');
+                    setTimeout(() => {
+                        cardElement.classList.remove('flipping');
+                        cardElement.style.transform = 'rotateY(180deg)';
+                        isSpinning = false;
+                        addHistory(result);
+                    }, 1500);
+                }, 800);
             }
         }
 
