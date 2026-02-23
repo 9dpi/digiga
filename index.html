@@ -625,11 +625,11 @@
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbw9dx_BAAd46n37Q-Y768tGNGu17IISWT588ThGuZpPjoGqq7Q74vr9SWg1qUZjhfmi/exec';
 
-        // Mock data cho chế độ Local
+        // Mock data cho chế độ Local (Pokemon style)
         const MOCK_CARDS = [
-            { name: "Long Thần", rarity: "SR", img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400", desc: "Sức mạnh tối thượng từ thuở khai thiên lập địa." },
-            { name: "Phượng Hoàng", rarity: "R", img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400", desc: "Tái sinh từ đống tro tàn với ngọn lửa vĩnh cửu." },
-            { name: "Kiếm Sư", rarity: "C", img: "https://images.unsplash.com/photo-1599508704512-2f19fe91915f?w=400", desc: "Nhát chém nhanh hơn cả ánh sáng." }
+            { id: "sv1-001", tên: "Pikachu", hệ: "Electric", hp: "70", "giai đoạn": "Basic", "ảnh url": "https://picsum.photos/400/250?random=1", "độ hiếm": "C", "bộ sưu tập": "Scarlet & Violet" },
+            { id: "sv1-022", tên: "Charizard", hệ: "Fire", hp: "170", "giai đoạn": "Stage 2", "ảnh url": "https://picsum.photos/400/250?random=22", "độ hiếm": "R", "bộ sưu tập": "Scarlet & Violet" },
+            { id: "sv1-029", tên: "Charizard ex", hệ: "Fire", hp: "330", "giai đoạn": "ex", "ảnh url": "https://picsum.photos/400/250?random=29", "độ hiếm": "SR", "bộ sưu tập": "Scarlet & Violet" }
         ];
 
         let coins = 160000;
@@ -637,23 +637,39 @@
         let ownedCards = 0;
 
         function updateDisplay(result) {
-            document.getElementById('res-name').innerText = result.name || result.id || "Thẻ Vô Danh";
-            document.getElementById('res-rarity').innerText = result.rarity || "C";
-            const rarityKey = (result.rarity || "C").toLowerCase();
+            // Map lại các trường từ Sheet (Sheet có thể dùng tiếng Việt có dấu hoặc không)
+            const name = result['tên'] || result['name'] || result.id || "Thẻ Vô Danh";
+            const rarity = (result['độ hiếm'] || result['độ_hiếm'] || result['rarity'] || "C").toUpperCase();
+            const img = result['ảnh url'] || result['ảnh_url'] || result['imageurl'] || result.img || 'https://via.placeholder.com/400x250?text=Digiga+Card';
+            const hp = result['hp'] || "";
+            const stage = result['giai đoạn'] || result['giai_đoạn'] || result['stage'] || "";
+
+            document.getElementById('res-name').innerText = name;
+            document.getElementById('res-rarity').innerText = rarity;
+            const rarityKey = rarity.toLowerCase();
             document.getElementById('res-rarity').style.background = `var(--${rarityKey})`;
-            document.getElementById('res-img').src = result.imageurl || result.img || 'https://via.placeholder.com/400x250?text=Digiga+Card';
-            document.getElementById('res-desc').innerText = result.description || result.desc || 'Thẻ bài hiếm trong bộ sưu tập Digiga';
+            document.getElementById('res-img').src = img;
+
+            // Mô tả ghép từ chiêu thức nếu có
+            const move1 = result['chiêu thức 1 - tên'] || "";
+            const move2 = result['chiêu thức 2 - tên'] || "";
+            document.getElementById('res-desc').innerText = move1 || move2 ? `Skill: ${move1}${move2 ? ' | ' + move2 : ''}` : 'Thẻ bài Pokemon huyền thoại.';
 
             const statsContainer = document.getElementById('res-stats');
             statsContainer.innerHTML = '';
 
-            const fieldsToShow = ['hệ', 'cấp', 'atk', 'def', 'hp', 'speed', 'element', 'type', 'power'];
-            fieldsToShow.forEach(field => {
-                const val = result[field] || result[field.toLowerCase()];
-                if (val) {
+            // Hiển thị HP và Giai đoạn nổi bật
+            const mainStats = [
+                { label: 'HP', val: hp },
+                { label: 'STAGE', val: stage },
+                { label: 'TYPE', val: result['hệ'] || result['type'] }
+            ];
+
+            mainStats.forEach(stat => {
+                if (stat.val) {
                     const item = document.createElement('div');
                     item.className = 'info-item';
-                    item.innerHTML = `<span class="info-label">${field.toUpperCase()}</span><span class="info-value">${val}</span>`;
+                    item.innerHTML = `<span class="info-label">${stat.label}</span><span class="info-value">${stat.val}</span>`;
                     statsContainer.appendChild(item);
                 }
             });
@@ -733,15 +749,16 @@
 
             results.forEach((card, index) => {
                 const item = document.createElement('div');
-                const rarity = (card.rarity || 'C').toUpperCase();
+                const rarity = (card['độ hiếm'] || card['độ_hiếm'] || card['rarity'] || 'C').toUpperCase();
                 item.className = `result-item ${rarity.toLowerCase()}`;
 
-                const imgUrl = card.imageurl || card.img || 'https://via.placeholder.com/150x225?text=Digiga';
+                const imgUrl = card['ảnh url'] || card['ảnh_url'] || card['imageurl'] || card['img'] || 'https://via.placeholder.com/150x225?text=Pokemon';
+                const name = card['tên'] || card['name'] || "Pokemon";
 
                 item.innerHTML = `
                     <div class="rarity-tag" style="background: var(--${rarity.toLowerCase()})">${rarity}</div>
-                    <img src="${imgUrl}" alt="${card.name}">
-                    <div class="card-name">${card.name || 'Thẻ'}</div>
+                    <img src="${imgUrl}" alt="${name}">
+                    <div class="card-name">${name}</div>
                 `;
                 grid.appendChild(item);
 
@@ -769,17 +786,20 @@
             const grid = document.getElementById('history-grid');
             const mini = document.createElement('div');
             mini.className = 'mini-card';
-            const rarityKey = (card.rarity || "C").toLowerCase();
+            const rarity = (card['độ hiếm'] || card['độ_hiếm'] || card['rarity'] || "C").toUpperCase();
+            const rarityKey = rarity.toLowerCase();
             mini.style.background = `var(--${rarityKey})`;
 
-            const imgUrl = card.imageurl || card.img || '';
+            const imgUrl = card['ảnh url'] || card['ảnh_url'] || card['imageurl'] || card['img'] || '';
+            const name = card['tên'] || card['name'] || "Pokemon";
+
             if (imgUrl) {
                 mini.style.backgroundImage = `url(${imgUrl})`;
                 mini.style.backgroundSize = 'cover';
                 mini.style.backgroundPosition = 'center';
             }
 
-            mini.title = `${card.name || 'Thẻ'} (${card.rarity || 'C'})`;
+            mini.title = `${name} (${rarity})`;
             grid.prepend(mini);
             if (grid.children.length > 30) grid.lastElementChild.remove();
         }

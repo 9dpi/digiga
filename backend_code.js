@@ -68,8 +68,68 @@ function pullGacha(count = 1) {
 }
 
 /**
- * Hàm hỗ trợ index.html gọi code server
+ * Hàm tạo dữ liệu mẫu từ danh sách thẻ bài (Pikachu, Pokémon style)
+ * Chạy hàm này trong Google Apps Script để khởi tạo Sheet 'Cards'
  */
-function include(filename) {
-    return HtmlService.createHtmlOutputFromFile(filename).getContent();
+function createSampleData() {
+    try {
+        const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+        let sheet = ss.getSheetByName('Cards');
+
+        if (sheet) {
+            // Nếu tồn tại thì xóa để tạo mới (Cẩn thận!)
+            ss.deleteSheet(sheet);
+        }
+        sheet = ss.insertSheet('Cards');
+
+        const headers = [
+            'ID', 'Tên', 'Hệ', 'HP', 'Giai đoạn', 'Ảnh URL',
+            'Chiêu thức 1 - Tên', 'Chiêu thức 1 - Năng lượng', 'Chiêu thức 1 - Sát thương', 'Chiêu thức 1 - Hiệu ứng',
+            'Chiêu thức 2 - Tên', 'Chiêu thức 2 - Năng lượng', 'Chiêu thức 2 - Sát thương', 'Chiêu thức 2 - Hiệu ứng',
+            'Khả năng', 'Điểm yếu (hệ)', 'Điểm yếu (hệ số)', 'Sức đề kháng (hệ)', 'Sức đề kháng (giảm)',
+            'Chi phí rút lui', 'Độ hiếm', 'Bộ sưu tập', 'Năm', 'Họa sĩ'
+        ];
+
+        sheet.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold');
+        sheet.setFrozenRows(1);
+
+        const cards = [
+            ['sv1-001', 'Pikachu', 'Electric', '70', 'Basic', 'https://picsum.photos/400/250?random=1', 'Tia sét', '1 Electric, 1 Colorless', '20', '', 'Sấm sét', '2 Electric, 1 Colorless', '70', 'Lật đồng xu: nếu ngửa, đối thủ bị tê liệt', '', 'Fighting', '2', '', '', '1', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-002', 'Charmander', 'Fire', '60', 'Basic', 'https://picsum.photos/400/250?random=2', 'Cào', '1 Colorless', '10', '', 'Ngọn lửa', '1 Fire, 1 Colorless', '30', '', '', 'Water', '2', '', '', '1', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-003', 'Squirtle', 'Water', '60', 'Basic', 'https://picsum.photos/400/250?random=3', 'Vòi rồng', '1 Water', '10', '', 'Vỗ đuôi', '1 Water, 1 Colorless', '20', '', '', 'Grass', '2', '', '', '1', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-004', 'Bulbasaur', 'Grass', '70', 'Basic', 'https://picsum.photos/400/250?random=4', 'Độc tố', '1 Grass', '10', 'Đối thủ bị nhiễm độc', 'Lá cắt', '1 Grass, 1 Colorless', '30', '', '', 'Fire', '2', '', '', '2', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-005', 'Eevee', 'Colorless', '60', 'Basic', 'https://picsum.photos/400/250?random=5', 'Nhanh nhẹn', '1 Colorless', '10', 'Lật đồng xu: nếu ngửa, né đòn tấn công', 'Tìm bạn', '1 Colorless', '0', 'Tìm 1 đồng đội từ bộ bài', '', 'Fighting', '2', '', '', '1', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-006', 'Meowth', 'Colorless', '60', 'Basic', 'https://picsum.photos/400/250?random=6', 'Vồ', '1 Colorless', '10', '', 'Nhặt token', '1 Colorless', '20', 'Nhặt 1 token từ discard', '', 'Fighting', '2', '', '', '1', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-007', 'Psyduck', 'Water', '60', 'Basic', 'https://picsum.photos/400/250?random=7', 'Đau đầu', '1 Colorless', '10', 'Gây thêm 10 sát thương cho chính mình', 'Bơi lội', '1 Water', '20', '', '', 'Grass', '2', '', '', '1', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-008', 'Mankey', 'Fighting', '60', 'Basic', 'https://picsum.photos/400/250?random=8', 'Phẫn nộ', '1 Fighting', '10', 'Gây thêm 10 sát thương nếu bị tổn thương', 'Đấm', '1 Fighting, 1 Colorless', '30', '', '', 'Psychic', '2', '', '', '1', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-009', 'Machop', 'Fighting', '70', 'Basic', 'https://picsum.photos/400/250?random=9', 'Nắm đấm', '1 Fighting', '20', '', 'Đẩy', '1 Fighting, 1 Colorless', '40', '', '', 'Psychic', '2', '', '', '2', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-010', 'Abra', 'Psychic', '50', 'Basic', 'https://picsum.photos/400/250?random=10', 'Dịch chuyển', '1 Psychic', '0', 'Đổi chỗ với 1 Pokemon trên ghế dự bị', 'Đọc suy nghĩ', '1 Psychic', '10', '', '', 'Darkness', '2', '', '', '1', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-011', 'Gastly', 'Psychic', '50', 'Basic', 'https://picsum.photos/400/250?random=11', 'Ám ảnh', '1 Psychic', '10', 'Lật đồng xu: nếu ngửa, đối thủ hoảng loạn', 'Khí độc', '1 Psychic, 1 Colorless', '20', '', '', 'Darkness', '2', '', '', '1', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-012', 'Onix', 'Fighting', '100', 'Basic', 'https://picsum.photos/400/250?random=12', 'Nghiền nát', '1 Fighting', '10', 'Lật 1 đồng xu: nếu ngửa, thêm 20 sát thương', 'Đá tảng', '2 Fighting, 1 Colorless', '80', '', '', 'Grass', '2', 'Electric', '30', '3', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-013', 'Drowzee', 'Psychic', '70', 'Basic', 'https://picsum.photos/400/250?random=13', 'Thôi miên', '1 Psychic', '10', 'Đối thủ ngủ', 'Ném', '1 Psychic, 1 Colorless', '30', '', '', 'Darkness', '2', '', '', '2', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-014', 'Krabby', 'Water', '70', 'Basic', 'https://picsum.photos/400/250?random=14', 'Càng kẹp', '1 Water', '20', '', 'Vỏ cứng', '1 Water, 1 Colorless', '30', 'Lật đồng xu: nếu ngửa, đỡ 20 sát thương', '', 'Grass', '2', '', '', '2', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-015', 'Voltorb', 'Electric', '60', 'Basic', 'https://picsum.photos/400/250?random=15', 'Nổ', '1 Electric', '30', 'Pokemon này cũng nhận 10 sát thương', 'Sốc điện', '1 Electric, 1 Colorless', '40', '', '', 'Fighting', '2', '', '', '1', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-016', 'Exeggcute', 'Grass', '50', 'Basic', 'https://picsum.photos/400/250?random=16', 'Nhóm hạt', '1 Grass', '10', 'Tìm 1 Exeggcute từ bộ bài', 'Ném trứng', '1 Grass, 1 Colorless', '30', '', '', 'Fire', '2', '', '', '1', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-017', 'Cubone', 'Fighting', '70', 'Basic', 'https://picsum.photos/400/250?random=17', 'Khóc thương', '1 Colorless', '0', 'Hồi 20 HP cho 1 Pokemon', 'Xương đập', '1 Fighting, 1 Colorless', '30', '', '', 'Grass', '2', '', '', '1', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-018', 'Rhyhorn', 'Fighting', '90', 'Basic', 'https://picsum.photos/400/250?random=18', 'Húc', '1 Fighting', '20', '', 'Đâm', '2 Fighting, 1 Colorless', '70', '', '', 'Grass', '2', 'Electric', '30', '3', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-019', 'Tangela', 'Grass', '80', 'Basic', 'https://picsum.photos/400/250?random=19', 'Vướng', '1 Grass', '10', 'Đối thủ không thể rút lui', 'Dây leo', '2 Grass, 1 Colorless', '60', '', '', 'Fire', '2', '', '', '2', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-020', 'Kangaskhan', 'Colorless', '100', 'Basic', 'https://picsum.photos/400/250?random=20', 'Vỗ về', '1 Colorless', '0', 'Hồi 30 HP cho 1 Pokemon', 'Đấm', '2 Colorless, 1 Colorless', '80', 'Lật 2 đồng xu: mỗi ngửa thêm 20 sát thương', '', 'Fighting', '2', '', '', '2', 'C', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-021', 'Raichu', 'Electric', '110', 'Stage 1', 'https://picsum.photos/400/250?random=21', 'Sét đánh', '2 Electric', '50', '', 'Tia chớp', '3 Electric, 1 Colorless', '150', 'Bỏ 2 năng lượng Electric', '', 'Fighting', '2', 'Metal', '30', '1', 'R', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-022', 'Charizard', 'Fire', '170', 'Stage 2', 'https://picsum.photos/400/250?random=22', 'Bão lửa', '2 Fire', '60', 'Gây 20 sát thương cho tất cả Pokemon dự bị đối thủ', 'Lửa thiêng', '3 Fire, 1 Colorless', '200', 'Bỏ 2 năng lượng Fire', 'Cánh rực lửa', 'Water', '2', '', '', '2', 'R', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-023', 'Blastoise', 'Water', '160', 'Stage 2', 'https://picsum.photos/400/250?random=23', 'Phun nước', '2 Water', '50', '', 'Sóng thần', '3 Water, 1 Colorless', '180', 'Bỏ 3 năng lượng Water', 'Vỏ xoáy', 'Grass', '2', 'Fighting', '30', '3', 'R', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-024', 'Venusaur', 'Grass', '170', 'Stage 2', 'https://picsum.photos/400/250?random=24', 'Hương thơm', '1 Grass', '30', 'Hồi 30 HP cho tất cả Pokemon', 'Hoa độc', '3 Grass, 1 Colorless', '150', 'Đối thủ bị nhiễm độc nặng', 'Lá chắn', 'Fire', '2', 'Water', '30', '3', 'R', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-025', 'Snorlax', 'Colorless', '150', 'Basic', 'https://picsum.photos/400/250?random=25', 'Ngủ ngày', '1 Colorless', '0', 'Hồi 50 HP, nhưng ngủ', 'Đè bẹp', '3 Colorless, 1 Colorless', '120', '', 'Mỡ dày', 'Fighting', '2', 'Psychic', '30', '4', 'R', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-026', 'Dragonite', 'Dragon', '180', 'Stage 2', 'https://picsum.photos/400/250?random=26', 'Cánh vỗ', '2 Colorless', '50', '', 'Giận dữ', '2 Water, 2 Lightning, 1 Colorless', '220', 'Bỏ 1 năng lượng mỗi loại', 'Bay', 'Fairy', '2', '', '', '2', 'R', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-027', 'Mewtwo', 'Psychic', '130', 'Basic', 'https://picsum.photos/400/250?random=27', 'Niệm lực', '1 Psychic', '20', 'Lật đồng xu: nếu ngửa, đối thủ không thể tấn công', 'Tâm linh', '3 Psychic', '120', 'Có thể dùng thêm 1 năng lượng Psychic để tăng 40 sát thương', 'Áp chế', 'Darkness', '2', 'Fighting', '30', '2', 'R', 'Scarlet & Violet', '2023', 'Shibuzoh.'],
+            ['sv1-028', 'Pikachu V', 'Electric', '200', 'V', 'https://picsum.photos/400/250?random=28', 'Tia chớp V', '2 Electric', '60', 'Gây 30 sát thương cho 1 Pokemon dự bị', 'Điện cực đại', '3 Electric, 1 Colorless', '200', '', 'V - Trái tim', 'Fighting', '2', 'Metal', '30', '1', 'SR', 'Scarlet & Violet', '2024', '5ban Graphics'],
+            ['sv1-029', 'Charizard ex', 'Fire', '330', 'ex', 'https://picsum.photos/400/250?random=29', 'Địa ngục lửa', '2 Fire', '90', 'Đốt cháy sân đối thủ', 'Bùng cháy ex', '4 Fire', '300', 'Sau tấn công, Pokemon này yếu thêm 1 lượt', 'ex - Ngọn lửa', 'Water', '2', 'Fighting', '30', '3', 'SR', 'Scarlet & Violet', '2024', '5ban Graphics'],
+            ['sv1-030', 'Mewtwo VMAX', 'Psychic', '320', 'VMAX', 'https://picsum.photos/400/250?random=30', 'Siêu năng lượng', '2 Psychic', '70', 'Có thể gắn thêm 1 năng lượng từ discard', 'Tâm linh cực độ VMAX', '4 Psychic', '270', 'Bỏ 3 năng lượng', 'VMAX - Lá chắn', 'Darkness', '2', 'Fighting', '30', '2', 'SR', 'Scarlet & Violet', '2024', '5ban Graphics']
+        ];
+
+        sheet.getRange(2, 1, cards.length, headers.length).setValues(cards);
+        sheet.autoResizeColumns(1, headers.length);
+        console.log('✅ Đã tạo thành công ' + cards.length + ' thẻ mẫu!');
+    } catch (error) {
+        console.log('❌ Lỗi: ' + error.message);
+    }
 }
