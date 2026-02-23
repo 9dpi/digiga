@@ -19,9 +19,9 @@
             --gold: #ffd700;
             --silver: #c0c0c0;
             --bronze: #cd7f32;
-            --ssr: linear-gradient(45deg, #ff00cc, #3333ff);
-            --sr: linear-gradient(45deg, #ffd700, #ff8c00);
-            --r: linear-gradient(45deg, #00f2ff, #0066ff);
+            --sr: linear-gradient(45deg, #ff00cc, #3333ff);
+            --r: linear-gradient(45deg, #ffd700, #ff8c00);
+            --c: linear-gradient(45deg, #00f2ff, #0066ff);
         }
 
         * {
@@ -352,11 +352,11 @@
         <div class="stats">
             <div class="stat-item">
                 <span class="stat-icon">💰</span>
-                <span id="coin-count">1,500</span>
+                <span id="coin-count">160,000</span>
             </div>
             <div class="stat-item">
                 <span class="stat-icon">🎴</span>
-                <span id="card-count">12/100</span>
+                <span id="card-count">0/100</span>
             </div>
         </div>
 
@@ -376,8 +376,9 @@
         </main>
 
         <div class="controls">
-            <button class="btn btn-gacha" onclick="pullCard()">QUAY 1 LẦN (100 💰)</button>
-            <button class="btn" style="background: rgba(255,255,255,0.1)">BỘ SƯU TẬP</button>
+            <button class="btn btn-gacha" onclick="pullCard(1)">QUAY x1 (160 💰)</button>
+            <button class="btn btn-gacha" style="background: var(--sr)" onclick="pullCard(10)">QUAY x10 (1,600
+                💰)</button>
         </div>
 
         <section class="inventory-preview">
@@ -403,42 +404,50 @@
             { name: "Kiếm Sư", rarity: "R", img: "https://images.unsplash.com/photo-1599508704512-2f19fe91915f?w=400", desc: "Nhát chém nhanh hơn cả ánh sáng." }
         ];
 
-        let coins = 1500;
+        let coins = 160000;
         let isSpinning = false;
+        let ownedCards = 0;
 
-        async function pullCard() {
-            if (isSpinning || coins < 100) return;
+        function updateDisplay(result) {
+            document.getElementById('res-name').innerText = result.name || result.id || "Thẻ Vô Danh";
+            document.getElementById('res-rarity').innerText = result.rarity || "C";
+            const rarityKey = (result.rarity || "C").toLowerCase();
+            document.getElementById('res-rarity').style.background = `var(--${rarityKey})`;
+            document.getElementById('res-img').src = result.imageurl || result.img || 'https://via.placeholder.com/400x250?text=Digiga+Card';
+            document.getElementById('res-desc').innerText = result.description || result.desc || 'Thẻ bài hiếm trong bộ sưu tập Digiga';
+        }
+
+        async function pullCard(count = 1) {
+            const cost = 160 * count;
+            if (isSpinning || coins < cost) {
+                if (coins < cost) alert("Bạn không đủ Token! Cần " + cost + " Token.");
+                return;
+            }
 
             isSpinning = true;
             const cardElement = document.getElementById('main-card');
             const overlay = document.getElementById('fx-overlay');
 
-            // Animation chuẩn bị
             cardElement.style.transform = 'scale(1.1) rotateZ(-5deg)';
 
-            // Kiểm tra xem có đang chạy trong môi trường Google Apps Script hay không
             const isGAS = typeof google !== 'undefined' && google.script && google.script.run;
 
             if (isGAS) {
                 google.script.run
-                    .withSuccessHandler(function (result) {
-                        if (!result) {
-                            alert("Server không trả về dữ liệu thẻ bài. Hãy kiểm tra lại file Sheet.");
+                    .withSuccessHandler(function (results) {
+                        if (!results) {
+                            alert("Server không trả về dữ liệu.");
                             isSpinning = false;
                             return;
                         }
 
-                        coins -= 100;
+                        coins -= cost;
                         document.getElementById('coin-count').innerText = coins.toLocaleString();
                         overlay.style.display = 'flex';
 
-                        // Cập nhật thông tin thẻ từ dữ liệu thật
-                        document.getElementById('res-name').innerText = result.name || result.id || "Thẻ Vô Danh";
-                        document.getElementById('res-rarity').innerText = result.rarity || "R";
-                        const rarityKey = (result.rarity || "R").toLowerCase();
-                        document.getElementById('res-rarity').style.background = `var(--${rarityKey})`;
-                        document.getElementById('res-img').src = result.imageurl || result.img || 'https://via.placeholder.com/400x250?text=Digiga+Card';
-                        document.getElementById('res-desc').innerText = result.description || result.desc || 'Thẻ bài hiếm trong bộ sưu tập Digiga';
+                        // Hiển thị thẻ cuối cùng đối với x10
+                        const lastResult = count === 10 ? results[9] : results;
+                        updateDisplay(lastResult);
 
                         setTimeout(() => {
                             overlay.style.display = 'none';
@@ -448,7 +457,17 @@
                                 cardElement.classList.remove('flipping');
                                 cardElement.style.transform = 'rotateY(180deg)';
                                 isSpinning = false;
-                                addHistory(result);
+
+                                if (count === 1) {
+                                    addHistory(results);
+                                    ownedCards++;
+                                } else {
+                                    results.forEach(r => {
+                                        addHistory(r);
+                                        ownedCards++;
+                                    });
+                                }
+                                document.getElementById('card-count').innerText = ownedCards + "/100";
                             }, 1500);
                         }, 800);
                     })
@@ -456,7 +475,7 @@
                         alert("Lỗi kết nối Server: " + err);
                         isSpinning = false;
                     })
-                    .pullGacha();
+                    .pullGacha(count);
             } else {
                 // Chế độ demo khi chạy file local (không có môi trường GAS)
                 console.log("Môi trường Local: Chạy chế độ Demo.");
@@ -466,7 +485,7 @@
                 document.getElementById('coin-count').innerText = coins.toLocaleString();
                 overlay.style.display = 'flex';
 
-                document.getElementById('res-name').innerText = result.name;
+                document.getElementById('res-name').innerText = result.name || 'Demo Card';
                 document.getElementById('res-rarity').innerText = result.rarity;
                 document.getElementById('res-rarity').style.background = `var(--${result.rarity.toLowerCase()})`;
                 document.getElementById('res-img').src = result.img;
@@ -489,12 +508,13 @@
             const grid = document.getElementById('history-grid');
             const mini = document.createElement('div');
             mini.className = 'mini-card';
-            mini.style.background = `var(--${card.rarity.toLowerCase()})`;
-            mini.style.opacity = '0.7';
-            mini.style.backgroundImage = `url(${card.img})`;
+            const rarityKey = (card.rarity || "C").toLowerCase();
+            mini.style.background = `var(--${rarityKey})`;
+            mini.style.backgroundImage = `url(${card.imageurl || card.img || ''})`;
             mini.style.backgroundSize = 'cover';
+            mini.title = `${card.name || 'Thẻ'} (${card.rarity || 'C'})`;
             grid.prepend(mini);
-            if (grid.children.length > 6) grid.lastElementChild.remove();
+            if (grid.children.length > 20) grid.lastElementChild.remove();
         }
 
         // Reset click
