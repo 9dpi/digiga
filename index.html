@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digiga Card Gacha - Siêu Phẩm Thẻ Bài</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff0055;
+            --secondary: #00f2ff;
+            --bg: #0a0a0c;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --gold: #ffd700;
+            --silver: #c0c0c0;
+            --bronze: #cd7f32;
+            --ssr: linear-gradient(45deg, #ff00cc, #3333ff);
+            --sr: linear-gradient(45deg, #ffd700, #ff8c00);
+            --r: linear-gradient(45deg, #00f2ff, #0066ff);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: white;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 0, 85, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 242, 255, 0.1) 0%, transparent 40%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        h1 {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 4rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 10px;
+            background: linear-gradient(to right, #fff, var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 2rem;
+        }
+
+        .stat-item {
+            background: var(--card-bg);
+            padding: 10px 25px;
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-icon { color: var(--gold); }
+
+        /* Gacha Area */
+        .gacha-main {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card-preview {
+            width: 300px;
+            height: 450px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .card-preview.flipping {
+            animation: ultimateShift 1.5s forwards;
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #1a1a1a 0%, #000 100%);
+            z-index: 2;
+        }
+
+        .card-front::after {
+            content: 'DIGIGA';
+            font-family: 'Syncopate';
+            font-weight: 700;
+            font-size: 2rem;
+            color: rgba(255,255,255,0.05);
+            letter-spacing: 5px;
+        }
+
+        .card-back {
+            background: #fff;
+            transform: rotateY(180deg);
+            color: #000;
+            padding: 20px;
+            justify-content: flex-start;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 250px;
+            background: #eee;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            object-fit: cover;
+        }
+
+        .rarity-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: 800;
+            font-size: 0.8rem;
+            color: white;
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 3rem;
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn {
+            background: transparent;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-gacha {
+            background: var(--ssr);
+            box-shadow: 0 0 20px rgba(255, 0, 204, 0.4);
+            border: none;
+        }
+
+        .btn-gacha:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 0 40px rgba(255, 0, 204, 0.6);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Animations */
+        @keyframes ultimateShift {
+            0% { transform: rotateY(0) scale(1); }
+            30% { transform: rotateY(180deg) scale(1.1) rotateZ(10deg); }
+            60% { transform: rotateY(360deg) scale(1.2) rotateZ(-10deg); }
+            100% { transform: rotateY(540deg) scale(1); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .shimmer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(
+                45deg,
+                transparent 20%,
+                rgba(255,255,255,0.1) 45%,
+                rgba(255,255,255,0.2) 50%,
+                rgba(255,255,255,0.1) 55%,
+                transparent 80%
+            );
+            background-size: 200% 200%;
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -100% -100%; }
+            100% { background-position: 100% 100%; }
+        }
+
+        /* Inventory Preview */
+        .inventory-preview {
+            margin-top: 5rem;
+            width: 100%;
+        }
+
+        .section-title {
+            font-family: 'Syncopate';
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary);
+            padding-left: 15px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .mini-card {
+            aspect-ratio: 2/3;
+            background: var(--card-bg);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: transform 0.3s;
+        }
+
+        .mini-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--secondary);
+        }
+
+        /* Loading Overlay */
+        #fx-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .burst {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: white;
+            animation: burst 0.5s ease-out forwards;
+        }
+
+        @keyframes burst {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(30); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="fx-overlay">
+        <div class="burst"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>DIGIGA</h1>
+            <p>Khám phá bộ sưu tập thẻ bài huyền thoại của bạn</p>
+        </header>
+
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-icon">💰</span>
+                <span id="coin-count">1,500</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-icon">🎴</span>
+                <span id="card-count">12/100</span>
+            </div>
+        </div>
+
+        <main class="gacha-main">
+            <div class="card-preview" id="main-card">
+                <div class="card-face card-front">
+                    <div class="shimmer"></div>
+                </div>
+                <div class="card-face card-back" id="result-card">
+                    <div class="rarity-badge" id="res-rarity" style="background: var(--ssr)">SSR</div>
+                    <img src="" alt="Card" class="card-image" id="res-img">
+                    <h2 id="res-name">Tên Thẻ Bài</h2>
+                    <p id="res-desc" style="font-size: 0.9rem; color: #666; margin-top: 10px;">Mô tả sức mạnh và kỹ năng của thẻ bài này sẽ hiện ở đây.</p>
+                </div>
+            </div>
+        </main>
+
+        <div class="controls">
+            <button class="btn btn-gacha" onclick="pullCard()">QUAY 1 LẦN (100 💰)</button>
+            <button class="btn" style="background: rgba(255,255,255,0.1)">BỘ SƯU TẬP</button>
+        </div>
+
+        <section class="inventory-preview">
+            <h2 class="section-title">THẺ BÀI GẦN ĐÂY</h2>
+            <div class="card-grid" id="history-grid">
+                <div class="mini-card"></div>
+                <div class="mini-card"></div>
+                <div class="mini-card"></div>
+                <div class="mini-card"></div>
+                <div class="mini-card"></div>
+                <div class="mini-card"></div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbw9dx_BAAd46n37Q-Y768tGNGu17IISWT588ThGuZpPjoGqq7Q74vr9SWg1qUZjhfmi/exec';
+        
+        // Mock data để demo giao diện nếu chưa có API thật
+        const MOCK_CARDS = [
+            { name: "Long Thần", rarity: "SSR", img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400", desc: "Sức mạnh tối thượng từ thuở khai thiên lập địa." },
+            { name: "Phượng Hoàng", rarity: "SR", img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400", desc: "Tái sinh từ đống tro tàn với ngọn lửa vĩnh cửu." },
+            { name: "Kiếm Sư", rarity: "R", img: "https://images.unsplash.com/photo-1599508704512-2f19fe91915f?w=400", desc: "Nhát chém nhanh hơn cả ánh sáng." }
+        ];
+
+        let coins = 1500;
+        let isSpinning = false;
+
+        async function pullCard() {
+            if (isSpinning || coins < 100) return;
+            
+            isSpinning = true;
+            coins -= 100;
+            document.getElementById('coin-count').innerText = coins.toLocaleString();
+
+            const cardElement = document.getElementById('main-card');
+            const overlay = document.getElementById('fx-overlay');
+            
+            // Bước 1: Animation lắc chuẩn bị
+            cardElement.style.transform = 'scale(1.1) rotateZ(-5deg)';
+            
+            setTimeout(() => {
+                // Bước 2: Hiệu ứng bùng nổ loading
+                overlay.style.display = 'flex';
+                
+                // Bước 3: Lấy dữ liệu (Giả lập hoặc API thực)
+                const result = MOCK_CARDS[Math.floor(Math.random() * MOCK_CARDS.length)];
+                
+                // Update UI card back
+                document.getElementById('res-name').innerText = result.name;
+                document.getElementById('res-rarity').innerText = result.rarity;
+                document.getElementById('res-rarity').style.background = `var(--${result.rarity.toLowerCase()})`;
+                document.getElementById('res-img').src = result.img;
+                document.getElementById('res-desc').innerText = result.desc;
+
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    // Bước 4: Flip card cực ảo
+                    cardElement.classList.add('flipping');
+                    
+                    setTimeout(() => {
+                        cardElement.classList.remove('flipping');
+                        cardElement.style.transform = 'rotateY(180deg)';
+                        isSpinning = false;
+                        
+                        // Thêm vào history (demo)
+                        addHistory(result);
+                    }, 1500);
+                }, 800);
+            }, 500);
+        }
+
+        function addHistory(card) {
+            const grid = document.getElementById('history-grid');
+            const mini = document.createElement('div');
+            mini.className = 'mini-card';
+            mini.style.background = `var(--${card.rarity.toLowerCase()})`;
+            mini.style.opacity = '0.7';
+            mini.style.backgroundImage = `url(${card.img})`;
+            mini.style.backgroundSize = 'cover';
+            grid.prepend(mini);
+            if (grid.children.length > 6) grid.lastElementChild.remove();
+        }
+
+        // Reset click
+        document.getElementById('main-card').addEventListener('click', () => {
+            if (!isSpinning) {
+                document.getElementById('main-card').style.transform = 'rotateY(0deg)';
+            }
+        });
+    </script>
+</body>
+</html>
