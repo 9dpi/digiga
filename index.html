@@ -86,7 +86,8 @@
 
         .container {
             width: 100%;
-            max-width: 1200px;
+            max-width: 450px;
+            /* Co gọn chiều ngang cho 16:10 */
             margin: 0 auto;
             padding: 1rem 0 100px 0;
             /* Bottom padding for nav */
@@ -182,7 +183,7 @@
         }
 
         .card-preview {
-            width: clamp(260px, 70vw, 320px);
+            width: clamp(260px, 85%, 340px);
             aspect-ratio: 2/3;
             position: relative;
             transform-style: preserve-3d;
@@ -700,8 +701,10 @@
         </div>
     </div>
 
-    <nav class="top-nav">
-        <div class="search-btn">🔍</div>
+    <nav class="top-nav" style="max-width: 450px; margin: 0 auto;">
+        <div class="logo"
+            style="font-family: 'Syncopate'; font-weight: 700; font-size: 1.2rem; background: linear-gradient(to right, #fff, var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px;">
+            DIGIGA</div>
         <div class="user-profile">
             <div class="avatar">
                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=cat11" alt="avatar">
